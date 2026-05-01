@@ -1,0 +1,28 @@
+ValueReading Class Test Plan					
+om719	khl89				
+Expected Performance					
+ID	Purpose	Steps	Conditions	Expected Result	Result
+E1	Verify ValueReading stores a measurement value correctly.	Create ValueReading(1000, 350.5), then run GetValue().	Valid integer time and float value are passed.	Returns 350.5.	TBD
+E2	Verify ValueReading stores a timestamp correctly.	Create ValueReading(1000, 350.5), then run GetTime().	Valid reading object has been created.	Returns 1000.	TBD
+E3	Verify timestamp conversion from milliseconds to seconds.	Create ValueReading(2000, 320), then run GetSeconds().	Time value is 2000 ms.	Returns 2.0.	TBD
+E4	Verify timestamp conversion from milliseconds to minutes.	Create ValueReading(60000, 320), then run GetMinutes().	Time value is 60000 ms.	Returns 1.0.	TBD
+E5	Verify decimal measurement values are preserved.	Create ValueReading(400, 301.75), then run GetValue().	Value contains decimal places.	Returns 301.75 with no rounding applied.	TBD
+					
+					
+Edge-Cases and Failure States					
+ID	Purpose	Steps	Conditions	Expected Result	Result
+F1	Test zero timestamp handling.	Create ValueReading(0, 120), then run all time getter methods.	Time is exactly 0 ms.	GetTime returns 0, GetSeconds returns 0.0, GetMinutes returns 0.0.	TBD
+F2	Test negative timestamp behaviour.	Create ValueReading(-200, 120), then run GetTime() and GetSeconds().	Invalid negative time is passed because no validation currently exists.	Returns negative values; future version should reject this input.	TBD
+F3	Test threshold boundary value storage.	Create ValueReading(800, 300), then run GetValue().	Value is exactly 300, the current ON threshold boundary.	Returns 300; later analysis should treat it as OFF because code uses > 300.	TBD
+F4	Test non-numeric value input.	Create ValueReading(800, 'bad'), then run GetValue().	String value is passed directly to constructor.	Object stores the string; future version should validate numeric values.	TBD
+F5	Test very large timestamp conversion.	Create ValueReading(3600000, 320), then run GetMinutes().	Time is 1 hour in milliseconds.	Returns 60.0.	TBD
+					
+					
+Malicious Use					
+ID	Purpose	Steps	Conditions	Expected Result	Result
+M1	Try storing command-like text as a value.	Create ValueReading(1000, "__import__('os').system('rm file')"), then run GetValue().	Malicious-looking text is passed as the value.	Text is only stored and returned; it is not executed.	TBD
+M2	Try extremely large numeric value.	Create ValueReading(1000, 1e309), then run GetValue().	Very large float-like value is used.	Returns Python float representation; future validation should limit realistic sensor values.	TBD
+M3	Try invalid timestamp type.	Create ValueReading('time', 320), then run GetSeconds().	Timestamp is text rather than numeric.	Raises TypeError during division; future version should validate constructor arguments.	TBD
+					
+					
+					
