@@ -260,6 +260,63 @@ class ValueAnalysis:
 
         return events
 
+# ---------ENERGY ESTIMATION---------
+    def EstPower(self, voltage):
+        """
+        Estimates power using RMS current.
+
+        Args:
+            voltage (float): Supply voltage.
+
+        Returns:
+            float: Estimated power (W).
+        """
+        return (voltage * self.RMS()) * 0.8 #0.8 is the estimated Power Factor
+    
+
+    def EstEnergy(self, voltage):
+        """
+        Estimates energy consumption.
+
+        Returns:
+            float: Energy in kWh.
+        """
+        times = [each_time.GetTime() for each_time in self.ValueReadings if each_time.GetValue() > 300]
+
+        interval = 200
+
+        on_periods = []
+
+        start_on = times[0]
+
+        for i in range(len(times)-1):
+            diff = times[i+1] - times[i]
+
+            if diff != interval:
+                on_periods.append((start_on, times[i]))
+                start_on = times[i+1]
+
+        on_periods.append((start_on, times[-1]))
+
+        total_on = 0
+        for each_period in on_periods:
+            total_on += each_period[1] - each_period[0]
+
+        return (self.EstPower(voltage) * (total_on / 3600)) / 1000
+        
+    def EstEnergyVals(self, voltage):
+        """
+        Calculates estimated energy contribution for each reading.
+
+        Args:
+            voltage (float): Supply voltage.
+
+        Returns:
+            List[float]: Estimated energy values for each reading.
+        """
+        values = [each_value.GetValue()*voltage*0.8*(0.2/3600) for each_value in self.ValueReadings]
+        return values
+
 # ---------REPORTING---------
     def BuildTimeline(self):
         """
